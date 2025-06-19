@@ -3,7 +3,7 @@ import streamlit as st
 import random
 from collections import Counter
 
-st.set_page_config(page_title="EuroMillions Boost+", layout="wide")
+st.set_page_config(page_title="EuroMillions Boost+ Advanced", layout="wide")
 
 @st.cache_data
 def load_data():
@@ -40,32 +40,66 @@ def compute_scores(df):
                 return len(all_draws) - i
         return len(all_draws)
 
-    main_scores = {n: freq_main[n]*0.4 + freq_recent_main[n]*0.3 + get_retard(n)*0.3 for n in range(1, 51)}
-    star_scores = {s: freq_star[s]*0.4 + freq_recent_star[s]*0.3 + get_retard_star(s)*0.3 for s in range(1, 13)}
+    main_scores = {
+        n: {
+            "score": freq_main[n]*0.4 + freq_recent_main[n]*0.3 + get_retard(n)*0.3,
+            "retard": get_retard(n),
+            "freq_total": freq_main[n],
+            "freq_50": freq_recent_main[n]
+        }
+        for n in range(1, 51)
+    }
+
+    star_scores = {
+        s: {
+            "score": freq_star[s]*0.4 + freq_recent_star[s]*0.3 + get_retard_star(s)*0.3,
+            "retard": get_retard_star(s),
+            "freq_total": freq_star[s],
+            "freq_50": freq_recent_star[s]
+        }
+        for s in range(1, 13)
+    }
 
     return main_scores, star_scores
 
-def generate_weighted_grid(scores_main, scores_star):
-    main_pool = list(scores_main.keys())
-    star_pool = list(scores_star.keys())
-    main_weights = [scores_main[n] for n in main_pool]
-    star_weights = [scores_star[s] for s in star_pool]
-
-    main_selected = sorted(random.choices(main_pool, weights=main_weights, k=5))
-    star_selected = sorted(random.choices(star_pool, weights=star_weights, k=2))
-    return main_selected, star_selected
+def generate_grid_from_pool(pool, count):
+    return sorted(random.sample(pool, count))
 
 df = load_data()
 
-st.title("💸 EuroMillions Boost+ – Générateur Pondéré")
+st.title("💸 EuroMillions Boost+ Advanced")
 
 if df.empty:
     st.warning("Aucune donnée chargée.")
 else:
     st.success(f"{len(df)} tirages chargés – de {df['Date'].min().date()} à {df['Date'].max().date()}")
-    scores_main, scores_star = compute_scores(df)
 
-    if st.button("🎰 Générer 8 grilles pondérées"):
-        for i in range(8):
-            grid = generate_weighted_grid(scores_main, scores_star)
-            st.write(f"**Grille #{i+1}** : Numéros → {[int(x) for x in grid[0]]} | Étoiles → {[int(x) for x in grid[1]]}")
+    main_scores, star_scores = compute_scores(df)
+
+    st.header("📊 Scores des numéros principaux")
+    st.dataframe(pd.DataFrame.from_dict(main_scores, orient='index').sort_values("score", ascending=False).head(15))
+
+    st.header("📊 Scores des étoiles")
+    st.dataframe(pd.DataFrame.from_dict(star_scores, orient='index').sort_values("score", ascending=False).head(10))
+
+    st.header("🎰 Générateurs")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("🔥 Générer 3 grilles HOT"):
+            top_main = sorted(main_scores, key=lambda x: main_scores[x]['score'], reverse=True)[:20]
+            top_stars = sorted(star_scores, key=lambda x: star_scores[x]['score'], reverse=True)[:8]
+            for i in range(3):
+                nums = generate_grid_from_pool(top_main, 5)
+                stars = generate_grid_from_pool(top_stars, 2)
+                st.write(f"**HOT #{i+1}** → Numéros : {nums} | Étoiles : {stars}")
+
+    with col2:
+        if st.button("🕒 Générer 3 grilles RETARD"):
+            top_main = sorted(main_scores, key=lambda x: main_scores[x]['retard'], reverse=True)[:20]
+            top_stars = sorted(star_scores, key=lambda x: star_scores[x]['retard'], reverse=True)[:8]
+            for i in range(3):
+                nums = generate_grid_from_pool(top_main, 5)
+                stars = generate_grid_from_pool(top_stars, 2)
+                st.write(f"**RETARD #{i+1}** → Numéros : {nums} | Étoiles : {stars}")
