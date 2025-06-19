@@ -8,7 +8,7 @@ st.set_page_config(page_title="EuroMillions Boost+ Advanced", layout="wide")
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("euromillions_full_1000.csv")
+        df = pd.read_csv("euromillions_full_from_second.csv")
         df["Date"] = pd.to_datetime(df["Date"])
         return df
     except:
