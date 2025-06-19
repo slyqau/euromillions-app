@@ -14,6 +14,16 @@ def load_data():
     except:
         return pd.DataFrame()
 
+# 🔥 Paires les plus fréquentes à prendre en compte
+hot_pairs = [(24, 26), (17, 45), (4, 23), (15, 28), (1, 48)]
+
+# Vérifie si une grille contient au moins une paire chaude
+def contains_hot_pair(numbers):
+    for a, b in hot_pairs:
+        if a in numbers and b in numbers:
+            return True
+    return False
+
 def compute_scores(df):
     all_numbers = df[["N1", "N2", "N3", "N4", "N5"]].values.flatten()
     all_stars = df[["E1", "E2"]].values.flatten()
@@ -62,7 +72,13 @@ def compute_scores(df):
 
     return main_scores, star_scores
 
-def generate_grid_from_pool(pool, count):
+def generate_grid_from_pool(pool, count, require_hot_pair=False):
+    tries = 0
+    while tries < 100:
+        grid = sorted(random.sample(pool, count))
+        if not require_hot_pair or contains_hot_pair(grid):
+            return grid
+        tries += 1
     return sorted(random.sample(pool, count))
 
 df = load_data()
@@ -87,11 +103,11 @@ else:
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("🔥 Générer 3 grilles HOT"):
+        if st.button("🔥 Générer 3 grilles HOT (avec paires chaudes)"):
             top_main = sorted(main_scores, key=lambda x: main_scores[x]['score'], reverse=True)[:20]
             top_stars = sorted(star_scores, key=lambda x: star_scores[x]['score'], reverse=True)[:8]
             for i in range(3):
-                nums = generate_grid_from_pool(top_main, 5)
+                nums = generate_grid_from_pool(top_main, 5, require_hot_pair=True)
                 stars = generate_grid_from_pool(top_stars, 2)
                 st.write(f"**HOT #{i+1}** → Numéros : {nums} | Étoiles : {stars}")
 
