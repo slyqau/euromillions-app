@@ -167,3 +167,24 @@ if st.button("🚀 Lancer la simulation sur 1000 grilles"):
     st.json(count_results(boost_results))
     st.write("**Grilles Aléatoires**")
     st.json(count_results(random_results))
+    st.subheader("📈 Graphique comparatif")
+
+    import matplotlib.pyplot as plt
+
+    boost_data = count_results(boost_results)
+    random_data = count_results(random_results)
+
+    labels = list(boost_data.keys())
+    boost_values = [boost_data[k] for k in labels]
+    random_values = [random_data.get(k, 0) for k in labels]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    x = range(len(labels))
+    ax.bar(x, boost_values, width=0.4, label='Boost+', align='center')
+    ax.bar([i + 0.4 for i in x], random_values, width=0.4, label='Aléatoire', align='center')
+    ax.set_xticks([i + 0.2 for i in x])
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.set_ylabel("Nombre de grilles")
+    ax.set_title("Comparaison BOOST+ vs Aléatoire (1000 grilles)")
+    ax.legend()
+    st.pyplot(fig)
