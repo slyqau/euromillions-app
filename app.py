@@ -119,3 +119,51 @@ else:
                 nums = generate_grid_from_pool(top_main, 5)
                 stars = generate_grid_from_pool(top_stars, 2)
                 st.write(f"**RETARD #{i+1}** → Numéros : {nums} | Étoiles : {stars}")
+
+st.header("🎯 Simulation comparative BOOST+ vs Aléatoire")
+
+    if st.button("🚀 Lancer la simulation sur 1000 grilles"):
+        import numpy as np
+        from collections import Counter
+
+        def simulate_draw():
+            numbers = sorted(random.sample(range(1, 51), 5))
+            stars = sorted(random.sample(range(1, 13), 2))
+            return set(numbers), set(stars)
+
+        def match(grille, tirage):
+            nums_match = len(set(grille[0]).intersection(tirage[0]))
+            stars_match = len(set(grille[1]).intersection(tirage[1]))
+            return nums_match, stars_match
+
+        def generate_boost_grid():
+            top_main = sorted(main_scores, key=lambda x: main_scores[x]['score'], reverse=True)[:20]
+            top_stars = sorted(star_scores, key=lambda x: star_scores[x]['score'], reverse=True)[:8]
+            nums = generate_grid_from_pool(top_main, 5, require_hot_pair=True)
+            stars = generate_grid_from_pool(top_stars, 2)
+            return nums, stars
+
+        def generate_random_grid():
+            return sorted(random.sample(range(1, 51), 5)), sorted(random.sample(range(1, 13), 2))
+
+        boost_results = []
+        random_results = []
+
+        for _ in range(1000):
+            tirage = simulate_draw()
+            boost_grille = generate_boost_grid()
+            random_grille = generate_random_grid()
+            boost_results.append(match(boost_grille, tirage))
+            random_results.append(match(random_grille, tirage))
+
+        def count_results(results):
+            stat = Counter()
+            for r in results:
+                stat[r] += 1
+            return stat
+
+        st.subheader("📊 Résultats de la simulation (1000 grilles)")
+        st.write("**Grilles BOOST+**")
+        st.json(dict(count_results(boost_results)))
+        st.write("**Grilles Aléatoires**")
+        st.json(dict(count_results(random_results)))
