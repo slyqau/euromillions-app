@@ -158,11 +158,12 @@ if st.button("🚀 Lancer la simulation sur 1000 grilles"):
     def count_results(results):
         stat = Counter()
         for r in results:
-            stat[r] += 1
+            key = f"{r[0]} numéros, {r[1]} étoiles"
+            stat[key] += 1
         return stat
 
     st.subheader("📊 Résultats de la simulation (1000 grilles)")
     st.write("**Grilles BOOST+**")
-    st.json(dict(count_results(boost_results)))
+    st.json(count_results(boost_results))
     st.write("**Grilles Aléatoires**")
-    st.json(dict(count_results(random_results)))
+    st.json(count_results(random_results))
