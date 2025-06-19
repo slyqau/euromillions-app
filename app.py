@@ -8,7 +8,7 @@ st.set_page_config(page_title="EuroMillions Boost", layout="wide")
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("euromillions_full.csv")
+        df = pd.read_csv("euromillions_full_1000.csv")
     except:
         df = pd.DataFrame()
     return df
