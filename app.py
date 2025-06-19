@@ -49,4 +49,6 @@ else:
     if st.button("Générer 8 grilles"):
         grids = [generate_optimized_grid(top_main, top_stars) for _ in range(8)]
         for i, grid in enumerate(grids):
-            st.write(f"**Grille #{i+1}** : Numéros → {grid[0]} | Étoiles → {grid[1]}")
+           st.write(f"**Grille #{i+1}** : Numéros → {[int(n) for n in grid[0]]} | Étoiles → {[int(e) for e in grid[1]]}")
+“correction affichage int”
+
